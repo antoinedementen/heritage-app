@@ -1,13 +1,28 @@
+import type { Metadata } from "next";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { SidebarProvider } from "@/providers/sidebar-provider";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-heritage-cream">
-      {/* Sidebar placeholder */}
-      <aside className="w-64 bg-heritage-dark text-heritage-cream shrink-0" />
-      <main className="flex-1 p-8">{children}</main>
-    </div>
+    <SidebarProvider>
+      <div className="flex h-screen overflow-hidden bg-heritage-cream">
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+            {children}
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

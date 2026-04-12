@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
+import { ToastProvider } from "@/providers/toast-provider";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -17,8 +18,34 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Heritage",
-  description: "Your family history, preserved.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
+  title: {
+    default: "Heritage — Votre généalogie familiale",
+    template: "%s · Heritage",
+  },
+  description: "Construisez, enrichissez et partagez votre arbre généalogique en famille — avec photos, événements, lieux et documents.",
+  keywords: ["généalogie", "arbre généalogique", "famille", "histoire familiale", "heritage"],
+  authors: [{ name: "Heritage" }],
+  creator: "Heritage",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Heritage",
+    title: "Heritage — Votre généalogie familiale",
+    description: "Préservez et partagez l'histoire de votre famille.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Heritage — Votre généalogie familiale",
+    description: "Préservez et partagez l'histoire de votre famille.",
+  },
+  robots: {
+    index: false, // Private family app — don't index
+    follow: false,
+  },
 };
 
 export default function RootLayout({
@@ -34,7 +61,9 @@ export default function RootLayout({
       <body className="min-h-full bg-heritage-cream text-heritage-dark antialiased">
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </QueryProvider>
       </body>
