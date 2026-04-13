@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, envId } = await req.json();
+    const { email, envId, role = "editor" } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email requis" }, { status: 400 });
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: {
         environment_id: envId ?? null,
-        role: "editor",
+        role,
         invitation_status: "pending",
       },
     });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       await admin.from("profiles").upsert({
         id: data.user.id,
         email,
-        role: "editor",
+        role,
         environment_id: envId ?? null,
         invitation_status: "pending",
       });

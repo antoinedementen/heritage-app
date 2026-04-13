@@ -73,6 +73,21 @@ export async function createEnvironment(payload: {
   return data;
 }
 
+export async function updateEnvironment(
+  id: string,
+  payload: { name?: string; description?: string }
+) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("environments")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteEnvironment(id: string) {
   const supabase = createClient();
   const { error } = await supabase.from("environments").delete().eq("id", id);

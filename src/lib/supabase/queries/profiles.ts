@@ -61,6 +61,42 @@ export async function updateInvitationStatus(
   if (error) throw error;
 }
 
+export async function fetchProfilesByEnv(
+  envId: string
+): Promise<ProfileWithEnvironment[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(`*, environments ( name )`)
+    .eq("environment_id", envId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!data) return [];
+  return data.map((p: any) => ({
+    ...p,
+    environment_name: p.environments?.name ?? null,
+    environments: undefined,
+  }));
+}
+
+export async function updateProfileFull(
+  userId: string,
+  payload: {
+    role?: ProfileRole;
+    invitation_status?: InvitationStatus;
+    environment_id?: string | null;
+    full_name?: string;
+    email?: string;
+  }
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update(payload)
+    .eq("id", userId);
+  if (error) throw error;
+}
+
 export async function deleteProfile(userId: string) {
   const supabase = createClient();
   const { error } = await supabase.from("profiles").delete().eq("id", userId);

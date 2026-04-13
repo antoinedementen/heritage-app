@@ -3,8 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProfiles,
+  fetchProfilesByEnv,
   updateProfileRole,
   updateInvitationStatus,
+  updateProfileFull,
   deleteProfile,
   type ProfileRole,
   type InvitationStatus,
@@ -14,6 +16,14 @@ export function useProfiles() {
   return useQuery({
     queryKey: ["profiles"],
     queryFn: fetchProfiles,
+  });
+}
+
+export function useProfilesByEnv(envId: string | null) {
+  return useQuery({
+    queryKey: ["profiles", "env", envId],
+    queryFn: () => fetchProfilesByEnv(envId!),
+    enabled: !!envId,
   });
 }
 
@@ -40,6 +50,29 @@ export function useUpdateProfile() {
   });
 }
 
+export function useUpdateProfileFull() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      ...payload
+    }: {
+      userId: string;
+      role?: ProfileRole;
+      invitation_status?: InvitationStatus;
+      environment_id?: string | null;
+      full_name?: string;
+      email?: string;
+    }) => updateProfileFull(userId, payload),
+    onSuccess: (_data, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["globalStats"] });
+      // Invalidate all env-scoped profile queries
+      queryClient.invalidateQueries({ queryKey: ["profiles", "env"] });
+    },
+  });
+}
+
 export function useDeleteProfile() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -47,6 +80,7 @@ export function useDeleteProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
       queryClient.invalidateQueries({ queryKey: ["globalStats"] });
+      queryClient.invalidateQueries({ queryKey: ["profiles", "env"] });
     },
   });
 }
