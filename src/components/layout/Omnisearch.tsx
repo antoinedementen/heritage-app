@@ -49,12 +49,16 @@ export function Omnisearch({ envId }: OmnisearchProps) {
     }
   }, [omnisearchOpen]); // eslint-disable-line
 
-  // ── Global keyboard shortcut Cmd/Ctrl+K ─────────────────────────────────
+  // ── Global keyboard shortcuts ────────────────────────────────────────────
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setOmnisearchOpen(!omnisearchOpen);
+      }
+      if (e.key === "Escape" && omnisearchOpen) {
+        e.preventDefault();
+        setOmnisearchOpen(false);
       }
     }
     window.addEventListener("keydown", onKeyDown);
