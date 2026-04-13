@@ -54,16 +54,24 @@ export function Modal({
     }
   }, [onClose]);
 
+  // Auto-focus first input/select/textarea on open (not close button)
+  useEffect(() => {
+    if (!isOpen) return;
+    setTimeout(() => {
+      const firstInput = panelRef.current?.querySelector<HTMLElement>(
+        'input, select, textarea'
+      );
+      const firstFocusable = panelRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      (firstInput ?? firstFocusable)?.focus();
+    }, 10);
+  }, [isOpen]); // Runs only when modal opens/closes, NOT on every re-render
+
+  // Keydown listener (Escape + focus trap)
   useEffect(() => {
     if (!isOpen) return;
     document.addEventListener("keydown", handleKeyDown);
-    // Auto-focus first focusable element
-    setTimeout(() => {
-      const first = panelRef.current?.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      first?.focus();
-    }, 10);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleKeyDown]);
 
