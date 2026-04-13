@@ -290,6 +290,80 @@ export async function uploadPersonPhoto(
   return data.publicUrl;
 }
 
+/**
+ * Fetch all people for an env WITH their relationships embedded.
+ * Used by the relationship calculator (buildRelGraph).
+ */
+export async function fetchPeopleWithRelationships(
+  envId: string
+): Promise<Array<Person & { relationships: RelationshipWithPerson[] }>> {
+  const supabase = createClient();
+
+  // 1. Fetch all people
+  const { data: people, error: peopleError } = await supabase
+    .from("people")
+    .select("*")
+    .eq("environment_id", envId)
+    .order("last_name")
+    .order("first_name");
+  if (peopleError) throw peopleError;
+  if (!people || people.length === 0) return [];
+
+  const peopleMap = new Map<string, Person>(
+    (people as Person[]).map((p) => [p.id, p])
+  );
+  const ids = people.map((p: Person) => p.id);
+
+  // 2. Fetch all relationships involving these people
+  const [relsARes, relsBRes] = await Promise.all([
+    supabase
+      .from("relationships")
+      .select("id, type, status, notes, person_a_id, person_b_id")
+      .in("person_a_id", ids),
+    supabase
+      .from("relationships")
+      .select("id, type, status, notes, person_a_id, person_b_id")
+      .in("person_b_id", ids),
+  ]);
+
+  // Map: personId → RelationshipWithPerson[]
+  const relsByPerson = new Map<string, RelationshipWithPerson[]>();
+  for (const id of ids) relsByPerson.set(id, []);
+
+  // person is person_a
+  for (const r of relsARes.data ?? []) {
+    const relPerson = peopleMap.get(r.person_b_id);
+    if (!relPerson) continue;
+    relsByPerson.get(r.person_a_id)?.push({
+      id: r.id,
+      type: r.type,
+      status: r.status,
+      notes: r.notes,
+      direction: "a_to_b",
+      related_person: relPerson,
+    });
+  }
+
+  // person is person_b
+  for (const r of relsBRes.data ?? []) {
+    const relPerson = peopleMap.get(r.person_a_id);
+    if (!relPerson) continue;
+    relsByPerson.get(r.person_b_id)?.push({
+      id: r.id,
+      type: r.type,
+      status: r.status,
+      notes: r.notes,
+      direction: "b_to_a",
+      related_person: relPerson,
+    });
+  }
+
+  return (people as Person[]).map((p) => ({
+    ...p,
+    relationships: relsByPerson.get(p.id) ?? [],
+  }));
+}
+
 // Check for potential duplicates among existing people
 export async function checkDuplicates(
   envId: string,

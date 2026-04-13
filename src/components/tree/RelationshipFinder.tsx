@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { GitBranch, ArrowRight, X, Search, TreeDeciduous } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { usePeople } from "@/hooks/usePeople";
+import { usePeopleWithRelationships } from "@/hooks/usePeople";
 import { buildRelGraph, calculateRelationship } from "@/lib/tree/relationship-calculator";
 import { useTreeStore } from "@/stores/treeStore";
 import type { Person, RelationshipWithPerson } from "@/lib/supabase/queries/people";
@@ -151,7 +151,7 @@ interface RelationshipFinderProps {
 
 export function RelationshipFinder({ envId, showTreeButton = false, onViewInTree }: RelationshipFinderProps) {
   const router = useRouter();
-  const { data: people = [] } = usePeople(envId);
+  const { data: people = [] } = usePeopleWithRelationships(envId);
   const [personA, setPersonA] = useState<Person | null>(null);
   const [personB, setPersonB] = useState<Person | null>(null);
   const { setPath } = useTreeStore();

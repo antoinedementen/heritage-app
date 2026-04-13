@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchPeople,
+  fetchPeopleWithRelationships,
   fetchPerson,
   createPerson,
   updatePerson,
@@ -18,6 +19,14 @@ export function usePeople(envId: string, filters?: PeopleFilters) {
   return useQuery({
     queryKey: ["people", envId, filters],
     queryFn: () => fetchPeople(envId, filters),
+    enabled: !!envId,
+  });
+}
+
+export function usePeopleWithRelationships(envId: string) {
+  return useQuery({
+    queryKey: ["people-with-rels", envId],
+    queryFn: () => fetchPeopleWithRelationships(envId),
     enabled: !!envId,
   });
 }

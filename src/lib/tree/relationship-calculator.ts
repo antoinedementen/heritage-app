@@ -46,7 +46,7 @@ export function buildRelGraph(
   for (const person of people) {
     if (!adj.has(person.id)) adj.set(person.id, []);
 
-    for (const rel of person.relationships) {
+    for (const rel of (person.relationships ?? [])) {
       if (!rel.related_person) continue;
       const otherId = rel.related_person.id;
 
